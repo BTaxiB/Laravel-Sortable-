@@ -5,114 +5,118 @@ Before you start add position column in table.
 Must enable jquery in order to use Sortable plugin.
 How to use:
 
-    1. Blade example
-    //html
-<tbody>
-    @csrf
-    @foreach($item as $i)
-    <tr data-id="{{ $i->id }}" class="item">
-        <td>{{ $i->position }}</td>
-        <td>{{ $i->name }}</td>
-        <td>
-            <a class="handle" style="cursor: pointer;"> 
-                <i class="fa fa-arrow-up" aria-hidden="true"></i> 
-                <i class="fa fa-arrow-down" aria-hidden="true"></i>
-            </a>
-        </td>
-    </tr>
-    @endforeach
-</tbody>
+### Blade example
 
-    2. Blade script example
-    
-<script>
-$('#myTable tbody').sortable({
-    items: "tr",
-    cursor: 'move',
-    opacity: 0.6,
-    'handle': '.handle',
-    update: function(event, ui) {
-        sendOrder();
-    }
-});
 
-$(window).resize(function() {
-    $('#myTable tr').css('min-width', $('#myTable').width());
-});
+```
+    <tbody>
+        @csrf
+        @foreach($item as $i)
+        <tr data-id="{{ $i->id }}" class="item">
+            <td>{{ $i->position }}</td>
+            <td>{{ $i->name }}</td>
+            <td>
+                <a class="handle" style="cursor: pointer;"> 
+                    <i class="fa fa-arrow-up" aria-hidden="true"></i> 
+                    <i class="fa fa-arrow-down" aria-hidden="true"></i>
+                </a>
+            </td>
+        </tr>
+        @endforeach
+    </tbody>
+```
 
-function sendOrder() {
 
-    var order = [];
+### Jquery Sortable Plugin
 
-    var token = $('meta[name="csrf-token"]').attr('content'); 
+```
+    <script>
+    $('#myTable tbody').sortable({
+        items: "tr",
+        cursor: 'move',
+        opacity: 0.6,
+        'handle': '.handle',
+        update: function(event, ui) {
+            sendOrder();
+        }
+    });
 
-    $('tr.item').each(function(index, element) {
+    $(window).resize(function() {
+        $('#myTable tr').css('min-width', $('#myTable').width());
+    });
 
-        order.push({
+    function sendOrder() {
 
-            id: $(this).attr('data-id'),
+        var order = [];
 
-            position: index + 1
+        var token = $('meta[name="csrf-token"]').attr('content'); 
+
+        $('tr.item').each(function(index, element) {
+
+            order.push({
+
+                id: $(this).attr('data-id'),
+
+                position: index + 1
+
+            });
 
         });
 
-    });
 
+        $.ajax({
 
-    $.ajax({
+            type: "POST",
 
-        type: "POST",
+            dataType: "json",
 
-        dataType: "json",
+            url: "{{ url('ur/desired/route-to-send-data') }}", 
 
-        url: "{{ url('ur/desired/route-to-send-data') }}", 
+            data: {
 
-        data: {
+                order: order,
 
-            order: order,
+                _token: token 
 
-            _token: token 
+            },
 
-        },
+            success: function(response) {
 
-        success: function(response) {
+                if (response.status == "success") {
 
-            if (response.status == "success") {
+                    console.log(response);
 
-                console.log(response);
+                } else {
 
-            } else {
+                    console.log(response);
 
-                console.log(response);
-
-            }
-        }
-    });
-}
-</script>
-
-    3. Controller example
-    
-public function sort(Request $request)
-{
-        $item = Category::all();
-        //process data sent with AJAX
-        
-        foreach ($item as $i) {
-            foreach ($request->order as $order) {
-                if ($order['id'] == $i->id) {
-                    $i->position = $order['position'];
-                    $i->save();
                 }
             }
+        });
+    }
+</script>
+```
+###Controller 
+ ```   
+    public function sort(Request $request)
+        {
+            $item = Category::all();
+
+            foreach ($item as $i) {
+                foreach ($request->order as $order) {
+                    if ($order['id'] == $i->id) {
+                        $i->position = $order['position'];
+                        $i->save();
+                    }
+                }
+            }
+
+            return response('Update Successfully.', 200);
         }
-
-        return response('Update Successfully.', 200);
-}
-
-    4. update store() method
-    
-$item->increment('position');
-$item->position = 1;
-
+```
+###update the store() method with following
+```    
+    $item->increment('position');
+    $item->position = 1;
+```
     

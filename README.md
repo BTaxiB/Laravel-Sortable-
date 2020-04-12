@@ -96,7 +96,7 @@ How to use:
     }
 </script>
 ```
-###Controller 
+### Controller 
  ```   
     public function sort(Request $request)
         {
@@ -114,7 +114,7 @@ How to use:
             return response('Update Successfully.', 200);
         }
 ```
-###update the store() method with following
+### update the store() method with following
 ```    
     $item->increment('position');
     $item->position = 1;
